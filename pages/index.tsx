@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import LoadingDots from '@/components/ui/LoadingDots';
 import { Document } from 'langchain/document';
+import Link from 'next/link';
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +18,7 @@ export default function Home() {
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [namespace, setNamespace] = useState('');
   const [messageState, setMessageState] = useState<{
     messages: Message[];
     pending?: string;
@@ -40,6 +42,19 @@ export default function Home() {
   useEffect(() => {
     textAreaRef.current?.focus();
   }, []);
+  const handleUpdateNamespace = async () => {
+    const response = await fetch('/api/updateNamespace', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newNamespace: namespace })
+    });
+
+    if (response.ok) {
+      alert('Namespace updated successfully');
+    } else {
+      alert('Failed to update namespace');
+    }
+  };
 
   //handle form submission
   async function handleSubmit(e: any) {
@@ -123,10 +138,32 @@ export default function Home() {
   return (
     <>
       <Layout>
-        <div className="mx-auto flex flex-col gap-4">
-          <h1 className="text-2xl font-bold leading-[1.1] tracking-tighter text-center">
-            Chat With Your Docs
-          </h1>
+          <div className="mx-auto flex flex-col gap-4">
+            <h1 className="text-2xl font-bold leading-[1.1] tracking-tighter text-center">
+              Chat With Your Docs
+            </h1>
+            
+            <div className="mx-auto flex flex-col gap-4">
+              <h2 className="text-2xl font-bold leading-[1.1] tracking-tighter text-center">Settings</h2>
+              
+              <div className="flex flex-col gap-2">
+                <label className="flex flex-col">
+                  <span className="font-semibold">Pinecone Namespace:</span>
+                  <input
+                    type="text"
+                    value={namespace}
+                    onChange={(e) => setNamespace(e.target.value)}
+                    className="border border-gray-300 rounded px-2 py-1"
+                  />
+                </label>
+                <button
+                  onClick={handleUpdateNamespace}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                >
+                  Update
+                </button>
+              </div>
+            </div>
           <main className={styles.main}>
             <div className={styles.cloud}>
               <div ref={messageListRef} className={styles.messagelist}>
@@ -262,7 +299,7 @@ export default function Home() {
         </div>
         <footer className="m-auto p-4">
           <a href="https://twitter.com/mayowaoshin">
-            Powered by LangChainAI. Demo built by Mayo (Twitter: @mayowaoshin).
+            Powered by LangChainAI. Demo built by Mayo.
           </a>
         </footer>
       </Layout>
